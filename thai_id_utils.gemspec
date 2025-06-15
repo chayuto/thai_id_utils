@@ -1,22 +1,29 @@
 # frozen_string_literal: true
 
+require_relative 'lib/thai_id_utils/version'
 Gem::Specification.new do |spec|
-  spec.name          = "thai_id_utils"
+  spec.name          = 'thai_id_utils'
   spec.version       = ThaiIdUtils::VERSION
-  spec.authors       = ["Chayut Orapinpatipat"]
-  spec.email         = ["chayut_o@hotmail.com"]
+  spec.authors       = ['Chayut Orapinpatipat']
+  spec.email         = ['chayut_o@hotmail.com']
 
-  spec.summary       = "Utilities for validating and decoding Thai national IDs"
-  spec.description   = "Provides checksum validation and component extraction (category, office, province, district, sequence) from Thai ID numbers."
-  spec.homepage      = "https://github.com/chayuto/thai-id-utils"
-  spec.license       = "MIT"
+  spec.summary       = 'Validate and decode Thai national ID numbers'
+  spec.description   = <<~DESC
+    Zero-dependency Ruby utilities for:
+      • checksum validation (modulus-11),
+      • component decoding (category, office_code, district_code, sequence),
+      • random valid ID generation,
+      • human-readable category descriptions.
+  DESC
+  spec.homepage      = 'https://github.com/chayuto/thai-id-utils'
+  spec.license       = 'MIT'
 
-  spec.required_ruby_version = ">= 2.7"
+  spec.required_ruby_version = '>= 2.7'
 
-  spec.files         = Dir["lib/**/*.rb"] + ["README.md", "Rakefile", "Gemfile"]
-  spec.bindir        = "exe"
+  spec.files         = Dir['lib/**/*.rb'] + ['README.md', 'Rakefile', 'Gemfile']
+  spec.bindir        = 'exe'
   spec.executables   = []
-  spec.require_paths = ["lib"]
+  spec.require_paths = ['lib']
 
-  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency 'minitest', '~> 5.0'
 end
