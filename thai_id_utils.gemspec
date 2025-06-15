@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/chayuto/thai_id_utils'
   spec.metadata    ||= {}
   spec.metadata['documentation_uri'] = 'https://github.com/chayuto/thai_id_utils#readme'
-  spec.license       = 'MIT'
+  spec.license = 'MIT'
 
   spec.required_ruby_version = '>= 2.7'
 
