@@ -15,7 +15,9 @@ Gem::Specification.new do |spec|
       • random valid ID generation,
       • human-readable category descriptions.
   DESC
-  spec.homepage      = 'https://github.com/chayuto/thai-id-utils'
+  spec.homepage      = 'https://github.com/chayuto/thai_id_utils'
+  spec.metadata    ||= {}
+  spec.metadata['documentation_uri'] = 'https://github.com/chayuto/thai_id_utils#readme'
   spec.license       = 'MIT'
 
   spec.required_ruby_version = '>= 2.7'

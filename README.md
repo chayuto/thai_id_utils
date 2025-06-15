@@ -11,23 +11,24 @@ require "thai_id_utils"
 
 id = "3012304567082"
 
-# ✅ Validate checksum
+# Validate checksum / ตรวจสอบความถูกต้องของ checksum
 if ThaiIdUtils.valid?(id)
   puts "Valid!"
 else
   puts "Invalid ID"
 end
 
-# 🔍 Decode components
+# Decode components / ถอดรหัสส่วนประกอบ
 info = ThaiIdUtils.decode(id)
 # => { category: 1, office_code: "6099", district_code: "99", sequence: "00257" }
 puts info.inspect
 
-# 🏷️ Get category description
+# Get category description / คำอธิบายประเภท
 desc = ThaiIdUtils.category_description(info[:category])
 # => "Thai nationals who were born after 1 January 1984 and had their birth notified within the given deadline (15 days)."
 puts desc
 
-# 🎲 Generate a new random valid ID
+# Generate a new random valid ID / สร้างหมายเลขบัตรประชาชนใหม่แบบสุ่มที่ถูกต้อง
 new_id = ThaiIdUtils.generate
 puts new_id  # => e.g. "3601205234518"
+```
