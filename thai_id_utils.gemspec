@@ -7,13 +7,16 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Chayut Orapinpatipat']
   spec.email         = ['chayut_o@hotmail.com']
 
-  spec.summary       = 'Validate and decode Thai national ID numbers'
+  spec.summary       = 'Validate, decode, and generate Thai national ID numbers'
   spec.description   = <<~DESC
-    Zero-dependency Ruby utilities for:
+    Zero-dependency Ruby utilities for Thai national ID numbers:
       • checksum validation (modulus-11),
-      • component decoding (category, office_code, district_code, sequence),
-      • random valid ID generation,
-      • human-readable category descriptions.
+      • component decoding (category, province, district, sequence),
+      • province-constrained valid ID generation with DISTRICT_COUNTS,
+      • province name lookup for all 77 provinces,
+      • laser ID validation, decoding, and generation,
+      • human-readable category descriptions (0–8),
+      • Buddhist Era ↔ Common Era date conversion.
   DESC
   spec.homepage      = 'https://github.com/chayuto/thai_id_utils'
   spec.metadata    ||= {}

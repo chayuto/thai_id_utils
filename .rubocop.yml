@@ -5,6 +5,7 @@ AllCops:
     - 'vendor/**/*'
     - 'tmp/**/*'
     - '*.gemspec'
+    - 'dataset/**/*'
 
 # Frozen string literals required on all gem files
 Style/FrozenStringLiteralComment:
@@ -15,9 +16,10 @@ Style/FrozenStringLiteralComment:
 Layout/LineLength:
   Max: 120
 
-# Single-module gem with data constants makes the module legitimately long
+# Single-module gem with data constants (PROVINCE_CODES, DISTRICT_COUNTS, etc.)
+# makes the module legitimately long
 Metrics/ModuleLength:
-  Max: 130
+  Max: 220
 
 # generate() method has legitimate complexity from optional param handling
 Metrics/MethodLength:
@@ -28,6 +30,11 @@ Metrics/AbcSize:
 
 Metrics/CyclomaticComplexity:
   Max: 10
+
+# Test classes grow naturally with coverage
+Metrics/ClassLength:
+  Exclude:
+    - 'test/**/*'
 
 # Module-level methods (self.method_name) are idiomatic for utility gems
 Style/ModuleFunction:

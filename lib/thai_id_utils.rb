@@ -67,9 +67,37 @@ module ThaiIdUtils
   }.freeze
   # rubocop:enable Layout/LineLength
 
+  # Mapping of province codes to the number of administrative districts
+  # (amphoe for provinces, khet for Bangkok). Used to constrain district code
+  # generation to realistic ranges within generate().
+  # Counts are approximate and reflect post-2011 administrative divisions.
+  DISTRICT_COUNTS = {
+    '10' => 50, '11' => 11, '12' => 6,  '13' => 7,  '14' => 16,
+    '15' => 7,  '16' => 11, '17' => 6,  '18' => 8,  '19' => 13,
+    '20' => 11, '21' => 8,  '22' => 10, '23' => 7,  '24' => 11,
+    '25' => 7,  '26' => 4,  '27' => 9,
+    '30' => 32, '31' => 23, '32' => 17, '33' => 22, '34' => 25,
+    '35' => 9,  '36' => 16, '37' => 7,  '38' => 8,  '39' => 6,
+    '40' => 26, '41' => 20, '42' => 14, '43' => 18, '44' => 13,
+    '45' => 20, '46' => 18, '47' => 18, '48' => 12, '49' => 7,
+    '50' => 25, '51' => 8,  '52' => 13, '53' => 9,  '54' => 8,
+    '55' => 15, '56' => 9,  '57' => 18, '58' => 7,
+    '60' => 15, '61' => 8, '62' => 11, '63' => 8, '64' => 9,
+    '65' => 9,  '66' => 12, '67' => 11,
+    '70' => 10, '71' => 13, '72' => 10, '73' => 7, '74' => 7,
+    '75' => 3,  '76' => 8,  '77' => 8,
+    '80' => 23, '81' => 8, '82' => 8, '83' => 3, '84' => 19,
+    '85' => 5,  '86' => 8,
+    '90' => 16, '91' => 7, '92' => 10, '93' => 11, '94' => 12,
+    '95' => 8,  '96' => 9
+  }.freeze
+
   LASER_ID_FORMAT = /\A[A-Z]{2}\d-\d{7}-\d{2}\z/.freeze
 
-  # Validate a Thai national ID using Thailand’s modulus-11 checksum algorithm.
+  # Known chip hardware-version prefixes observed on issued Thai ID cards.
+  LASER_HARDWARE_VERSIONS = %w[JC AA BB GC].freeze
+
+  # Validate a Thai national ID using Thailand's modulus-11 checksum algorithm.
   #
   # @param id [String, Integer] 13-digit Thai national ID number
   # @return [Boolean] true if the checksum is valid, false otherwise
@@ -112,39 +140,58 @@ module ThaiIdUtils
   end
 
   # Generate a random, valid 13-digit Thai national ID.
-  # Any component can be overridden; the rest is randomized and the checksum is computed.
+  # Any component can be overridden; the rest is randomised and the checksum
+  # is computed. When neither +office_code+ nor +province_code+ is given, a
+  # valid province is selected at random and a district code within that
+  # province's known range is generated.
   #
   # @param category [Integer] ID category (1–8), default: random 1–6
-  # @param office_code [Integer, String, nil] 4-digit registrar code, default: random
-  # @param district_code [String, nil] 2-digit district override within office_code
+  # @param province_code [String, nil] 2-digit province code (e.g. "10").
+  #   Must be a key in PROVINCE_CODES. Ignored when +office_code+ is given.
+  # @param office_code [Integer, String, nil] 4-digit registrar code override.
+  #   When supplied, bypasses province_code and district_code validation.
+  # @param district_code [String, nil] 2-digit district override (applied on
+  #   top of whatever office_code is built).
   # @param sequence [Integer, String, nil] 5-digit personal sequence, default: random
   # @return [String] a valid 13-digit Thai national ID
-  # rubocop:disable Metrics/AbcSize
+  # @raise [ArgumentError] if province_code is given but not in PROVINCE_CODES
+  # rubocop:disable Metrics/AbcSize, Metrics/PerceivedComplexity
   def self.generate(category: rand(1..6),
+                    province_code: PROVINCE_CODES.keys.sample,
                     office_code: nil,
                     district_code: nil,
                     sequence: nil)
-    # Build and override office_code/district_code
-    office_code = format('%04d', office_code || rand(1..9_999))
+    office_code = if office_code
+                    format('%04d', office_code)
+                  else
+                    pcode = province_code.to_s
+                    raise ArgumentError, "Unknown province_code: #{pcode.inspect}" unless PROVINCE_CODES.key?(pcode)
+
+                    "#{pcode}#{format('%02d', rand(1..DISTRICT_COUNTS[pcode]))}"
+                  end
     office_code[2..3] = district_code.to_s.rjust(2, '0') if district_code
 
-    # Sequence (5 digits) and classification (2 digits)
     sequence       = format('%05d', sequence || rand(0..99_999))
     classification = format('%02d', rand(0..99))
 
-    # First 12 digits: category + office_code + sequence + classification
     digits = [category.to_i] +
              office_code.chars.map(&:to_i) +
              sequence.chars.map(&:to_i) +
              classification.chars.map(&:to_i)
 
-    # Checksum
     sum = digits.each_with_index.sum { |d, i| d * (13 - i) }
     check = (11 - (sum % 11)) % 10
 
     (digits + [check]).join
   end
-  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/AbcSize, Metrics/PerceivedComplexity
+
+  # Return all valid 2-digit province code strings.
+  #
+  # @return [Array<String>] all keys of PROVINCE_CODES
+  def self.province_codes
+    PROVINCE_CODES.keys
+  end
 
   # Return the human-readable description for a Thai ID category code.
   #
@@ -204,5 +251,20 @@ module ThaiIdUtils
       box_id: parts[1],
       position: parts[2]
     }
+  end
+
+  # Generate a random, valid Thai ID card laser ID.
+  # Format: XXN-NNNNNNN-NN  (e.g., JC1-0002507-15)
+  #
+  # @param hardware_version [String, nil] full 3-char chip code (e.g. "JC1").
+  #   Defaults to a random prefix from LASER_HARDWARE_VERSIONS + digit 1–3.
+  # @param box_id [Integer, nil] distribution box number (1–9,999,999)
+  # @param position [Integer, nil] slot within the box (1–60)
+  # @return [String] a laser ID string matching LASER_ID_FORMAT
+  def self.generate_laser_id(hardware_version: nil, box_id: nil, position: nil)
+    hw  = hardware_version || "#{LASER_HARDWARE_VERSIONS.sample}#{rand(1..3)}"
+    box = format('%07d', box_id || rand(1..9_999_999))
+    pos = format('%02d', position || rand(1..60))
+    "#{hw}-#{box}-#{pos}"
   end
 end

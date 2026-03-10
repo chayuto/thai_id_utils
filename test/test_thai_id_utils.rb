@@ -37,6 +37,35 @@ class TestThaiIdUtils < Minitest::Test
     assert ThaiIdUtils.valid?(id)
   end
 
+  def test_generate_default_uses_valid_province
+    10.times do
+      id = ThaiIdUtils.generate
+      decoded = ThaiIdUtils.decode(id)
+      assert_includes ThaiIdUtils.province_codes, decoded[:province_code]
+    end
+  end
+
+  def test_generate_with_province_code
+    id = ThaiIdUtils.generate(province_code: '10')
+    assert ThaiIdUtils.valid?(id)
+    assert_equal '10', ThaiIdUtils.decode(id)[:province_code]
+  end
+
+  def test_generate_with_province_code_constrains_district
+    50.times do
+      id = ThaiIdUtils.generate(province_code: '83') # Phuket: 3 districts
+      district = ThaiIdUtils.decode(id)[:district_code].to_i
+      assert district >= 1
+      assert district <= 3
+    end
+  end
+
+  def test_generate_raises_on_invalid_province_code
+    assert_raises(ArgumentError) { ThaiIdUtils.generate(province_code: '99') }
+    assert_raises(ArgumentError) { ThaiIdUtils.generate(province_code: '00') }
+    assert_raises(ArgumentError) { ThaiIdUtils.generate(province_code: '28') }
+  end
+
   def test_generate_with_options
     custom = ThaiIdUtils.generate(
       category: 2,
@@ -63,6 +92,31 @@ class TestThaiIdUtils < Minitest::Test
     assert_equal '0007', id[1..4]
     assert_equal 13, id.size
     assert ThaiIdUtils.valid?(id)
+  end
+
+  def test_generate_office_code_bypasses_province_validation
+    # Explicit office_code skips province_code validation — backwards compatible
+    id = ThaiIdUtils.generate(office_code: '9999')
+    assert_equal '9999', id[1..4]
+    assert ThaiIdUtils.valid?(id)
+  end
+
+  def test_province_codes_returns_all_provinces
+    codes = ThaiIdUtils.province_codes
+    assert_equal 77, codes.size
+    assert_includes codes, '10'
+    assert_includes codes, '83'
+    assert_includes codes, '96'
+    assert_equal ThaiIdUtils::PROVINCE_CODES.keys, codes
+  end
+
+  def test_district_counts_covers_all_province_codes
+    ThaiIdUtils.province_codes.each do |code|
+      assert ThaiIdUtils::DISTRICT_COUNTS.key?(code),
+             "DISTRICT_COUNTS missing entry for province #{code}"
+      assert ThaiIdUtils::DISTRICT_COUNTS[code] >= 1,
+             "DISTRICT_COUNTS[#{code}] must be >= 1"
+    end
   end
 
   def test_category_description_known
@@ -117,5 +171,25 @@ class TestThaiIdUtils < Minitest::Test
 
   def test_laser_id_decode_invalid_raises
     assert_raises(ThaiIdUtils::InvalidIDError) { ThaiIdUtils.laser_id_decode(INVALID_LASER_ID) }
+  end
+
+  def test_generate_laser_id_default_is_valid
+    laser = ThaiIdUtils.generate_laser_id
+    assert ThaiIdUtils.laser_id_valid?(laser),
+           "Expected #{laser.inspect} to match laser ID format"
+  end
+
+  def test_generate_laser_id_uses_known_hardware_version
+    100.times do
+      laser = ThaiIdUtils.generate_laser_id
+      prefix = laser[0..1]
+      assert_includes ThaiIdUtils::LASER_HARDWARE_VERSIONS, prefix
+    end
+  end
+
+  def test_generate_laser_id_with_overrides
+    laser = ThaiIdUtils.generate_laser_id(hardware_version: 'JC2', box_id: 42, position: 5)
+    assert_equal 'JC2-0000042-05', laser
+    assert ThaiIdUtils.laser_id_valid?(laser)
   end
 end
