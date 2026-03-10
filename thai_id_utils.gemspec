@@ -17,12 +17,15 @@ Gem::Specification.new do |spec|
   DESC
   spec.homepage      = 'https://github.com/chayuto/thai_id_utils'
   spec.metadata    ||= {}
-  spec.metadata['documentation_uri'] = 'https://github.com/chayuto/thai_id_utils#readme'
+  spec.metadata['documentation_uri']     = 'https://rubydoc.info/gems/thai_id_utils'
+  spec.metadata['source_code_uri']       = 'https://github.com/chayuto/thai_id_utils'
+  spec.metadata['changelog_uri']         = 'https://github.com/chayuto/thai_id_utils/blob/main/CHANGELOG.md'
+  spec.metadata['rubygems_mfa_required'] = 'true'
   spec.license = 'MIT'
 
   spec.required_ruby_version = '>= 2.7'
 
-  spec.files         = Dir['lib/**/*.rb'] + ['README.md', 'Rakefile', 'Gemfile']
+  spec.files         = Dir['lib/**/*.rb'] + ['README.md', 'CHANGELOG.md', 'LICENSE']
   spec.bindir        = 'exe'
   spec.executables   = []
   spec.require_paths = ['lib']

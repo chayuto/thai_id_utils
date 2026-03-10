@@ -69,7 +69,10 @@ module ThaiIdUtils
 
   LASER_ID_FORMAT = /\A[A-Z]{2}\d-\d{7}-\d{2}\z/.freeze
 
-  # Public: Validate checksum using Thailand’s modulus-11 algorithm
+  # Validate a Thai national ID using Thailand’s modulus-11 checksum algorithm.
+  #
+  # @param id [String, Integer] 13-digit Thai national ID number
+  # @return [Boolean] true if the checksum is valid, false otherwise
   def self.valid?(id)
     digits = id.to_s.chars.map(&:to_i)
     return false unless digits.size == 13
@@ -80,15 +83,18 @@ module ThaiIdUtils
     false
   end
 
-  # Public: Decode components present in a Thai ID
-  # Returns a hash with keys:
-  #   :category          => Integer
-  #   :office_code       => String (4-digit registrar: province + district)
-  #   :province_code     => String (first 2 of office_code)
-  #   :province_name     => String or nil (nil if code not in PROVINCE_CODES)
-  #   :district_code     => String (last 2 of office_code)
-  #   :sequence          => String (5-digit personal sequence)
-  #   :registration_code => String (2-digit chronological sequence marker)
+  # Decode the components encoded in a Thai national ID number.
+  #
+  # @param id [String, Integer] 13-digit Thai national ID number
+  # @return [Hash] decoded fields:
+  #   - `:category` [Integer] — registration category (0–8)
+  #   - `:office_code` [String] — 4-digit registrar code (province + district)
+  #   - `:province_code` [String] — first 2 digits of office_code
+  #   - `:province_name` [String, nil] — province name, or nil if unknown
+  #   - `:district_code` [String] — last 2 digits of office_code
+  #   - `:sequence` [String] — 5-digit personal sequence number
+  #   - `:registration_code` [String] — 2-digit chronological sequence marker
+  # @raise [InvalidIDError] if the ID fails checksum validation
   def self.decode(id)
     raise InvalidIDError, 'Invalid ID' unless valid?(id)
 
@@ -105,8 +111,14 @@ module ThaiIdUtils
     }
   end
 
-  # Public: Generate a random, valid 13-digit Thai national ID.
-  # You can override any component or let it be randomized.
+  # Generate a random, valid 13-digit Thai national ID.
+  # Any component can be overridden; the rest is randomized and the checksum is computed.
+  #
+  # @param category [Integer] ID category (1–8), default: random 1–6
+  # @param office_code [Integer, String, nil] 4-digit registrar code, default: random
+  # @param district_code [String, nil] 2-digit district override within office_code
+  # @param sequence [Integer, String, nil] 5-digit personal sequence, default: random
+  # @return [String] a valid 13-digit Thai national ID
   # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
   def self.generate(category: rand(1..6),
                     office_code: nil,
@@ -134,39 +146,55 @@ module ThaiIdUtils
   end
   # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
 
-  # Public: Return a human-readable description for a category code
+  # Return the human-readable description for a Thai ID category code.
+  #
+  # @param category [Integer, String] category digit (0–8)
+  # @return [String] description, or "Unknown category" if not found
   def self.category_description(category)
     CATEGORY_DESCRIPTIONS[category.to_i] || 'Unknown category'
   end
 
-  # Public: Return province name for a 2-digit province code string.
-  # Returns nil for unknown codes.
+  # Return the province name for a 2-digit province code.
+  #
+  # @param code [String] 2-digit province code (e.g., "10" for Bangkok)
+  # @return [String, nil] province name, or nil if the code is not recognized
   def self.province_name(code)
     PROVINCE_CODES[code.to_s]
   end
 
-  # Public: Convert Buddhist Era year to Common Era year.
+  # Convert a Buddhist Era year to Common Era (subtract 543).
+  #
+  # @param year [Integer, String] Buddhist Era year (e.g., 2567)
+  # @return [Integer] Common Era year (e.g., 2024)
   def self.be_to_ce(year)
     year.to_i - 543
   end
 
-  # Public: Convert Common Era year to Buddhist Era year.
+  # Convert a Common Era year to Buddhist Era (add 543).
+  #
+  # @param year [Integer, String] Common Era year (e.g., 2024)
+  # @return [Integer] Buddhist Era year (e.g., 2567)
   def self.ce_to_be(year)
     year.to_i + 543
   end
 
-  # Public: Validate the format of a Thai ID card laser ID (printed on the back).
-  # Expected format: XXN-NNNNNNN-NN (e.g., JC1-0002507-15)
+  # Validate the format of a Thai ID card laser ID (printed on the card back).
+  # Expected format: XXN-NNNNNNN-NN  (e.g., JC1-0002507-15)
+  #
+  # @param laser_id [String] the laser ID string to validate
+  # @return [Boolean] true if format matches, false otherwise
   def self.laser_id_valid?(laser_id)
     LASER_ID_FORMAT.match?(laser_id.to_s)
   end
 
-  # Public: Decode a laser ID string into its components.
-  # Raises InvalidIDError if the format is invalid.
-  # Returns a hash with keys:
-  #   :hardware_version => String (e.g. 'JC1', chip generation)
-  #   :box_id           => String (e.g. '0002507', distribution box)
-  #   :position         => String (e.g. '15', slot within box)
+  # Decode a Thai ID card laser ID into its components.
+  #
+  # @param laser_id [String] laser ID string (e.g., "JC1-0002507-15")
+  # @return [Hash] decoded fields:
+  #   - `:hardware_version` [String] — chip generation code (e.g., "JC1")
+  #   - `:box_id` [String] — distribution box number (e.g., "0002507")
+  #   - `:position` [String] — slot within the box (e.g., "15")
+  # @raise [InvalidIDError] if the laser ID format is invalid
   def self.laser_id_decode(laser_id)
     raise InvalidIDError, 'Invalid laser ID' unless laser_id_valid?(laser_id)
 

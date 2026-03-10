@@ -1,0 +1,30 @@
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - '*.gemspec'
+
+# Frozen string literals required on all gem files
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+# Large data hashes (CATEGORY_DESCRIPTIONS, PROVINCE_CODES) are legitimately long
+Layout/LineLength:
+  Max: 120
+
+# generate() method has legitimate complexity from optional param handling
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+# Module-level methods (self.method_name) are idiomatic for utility gems
+Style/ModuleFunction:
+  Enabled: false

@@ -63,6 +63,19 @@ Use `assert`/`refute`, `assert_equal`, `assert_raises`, `assert_nil` — avoid `
 **Laser ID format**: `/\A[A-Z]{2}\d-\d{7}-\d{2}\z/` (e.g., `JC1-0002507-15`)
 **Buddhist Era offset**: BE = CE + 543
 
+## Pre-Publish Checklist
+
+Before running `gem push`:
+
+- [ ] `VERSION` bumped in `lib/thai_id_utils/version.rb`
+- [ ] `CHANGELOG.md` updated with the new version section
+- [ ] All tests pass: `rake`
+- [ ] RuboCop clean: `bundle exec rubocop`
+- [ ] `spec.files` does NOT include test files (`gem contents thai_id_utils-X.Y.Z.gem`)
+- [ ] No credentials or secrets in source
+- [ ] Built gem inspected: `gem contents thai_id_utils-X.Y.Z.gem`
+- [ ] GitHub release created and linked to CHANGELOG section
+
 ## Allowed Bash Commands
 
 - `ruby -Ilib -Itest test/test_thai_id_utils.rb 2>&1` — run tests
