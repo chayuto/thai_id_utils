@@ -15,6 +15,10 @@ Style/FrozenStringLiteralComment:
 Layout/LineLength:
   Max: 120
 
+# Single-module gem with data constants makes the module legitimately long
+Metrics/ModuleLength:
+  Max: 130
+
 # generate() method has legitimate complexity from optional param handling
 Metrics/MethodLength:
   Max: 25

@@ -101,12 +101,12 @@ module ThaiIdUtils
     d = id.to_s.chars
 
     {
-      category:          d[0].to_i,
-      office_code:       d[1..4].join,
-      province_code:     d[1..2].join,
-      province_name:     PROVINCE_CODES[d[1..2].join],
-      district_code:     d[3..4].join,
-      sequence:          d[5..9].join,
+      category: d[0].to_i,
+      office_code: d[1..4].join,
+      province_code: d[1..2].join,
+      province_name: PROVINCE_CODES[d[1..2].join],
+      district_code: d[3..4].join,
+      sequence: d[5..9].join,
       registration_code: d[10..11].join
     }
   end
@@ -119,7 +119,7 @@ module ThaiIdUtils
   # @param district_code [String, nil] 2-digit district override within office_code
   # @param sequence [Integer, String, nil] 5-digit personal sequence, default: random
   # @return [String] a valid 13-digit Thai national ID
-  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+  # rubocop:disable Metrics/AbcSize
   def self.generate(category: rand(1..6),
                     office_code: nil,
                     district_code: nil,
@@ -144,7 +144,7 @@ module ThaiIdUtils
 
     (digits + [check]).join
   end
-  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 
   # Return the human-readable description for a Thai ID category code.
   #
@@ -201,8 +201,8 @@ module ThaiIdUtils
     parts = laser_id.to_s.split('-')
     {
       hardware_version: parts[0],
-      box_id:           parts[1],
-      position:         parts[2]
+      box_id: parts[1],
+      position: parts[2]
     }
   end
 end

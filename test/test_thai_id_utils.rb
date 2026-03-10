@@ -37,7 +37,6 @@ class TestThaiIdUtils < Minitest::Test
     assert ThaiIdUtils.valid?(id)
   end
 
-  # rubocop:disable Metrics/MethodLength
   def test_generate_with_options
     custom = ThaiIdUtils.generate(
       category: 2,
@@ -58,7 +57,6 @@ class TestThaiIdUtils < Minitest::Test
 
     assert ThaiIdUtils.valid?(custom)
   end
-  # rubocop:enable Metrics/MethodLength
 
   def test_generate_only_office_code
     id = ThaiIdUtils.generate(office_code: 7)
@@ -110,14 +108,12 @@ class TestThaiIdUtils < Minitest::Test
     refute ThaiIdUtils.laser_id_valid?('JC1-0002507-155')
   end
 
-  # rubocop:disable Metrics/MethodLength
   def test_laser_id_decode_valid
     info = ThaiIdUtils.laser_id_decode(VALID_LASER_ID)
     assert_equal 'JC1',     info[:hardware_version]
     assert_equal '0002507', info[:box_id]
     assert_equal '15',      info[:position]
   end
-  # rubocop:enable Metrics/MethodLength
 
   def test_laser_id_decode_invalid_raises
     assert_raises(ThaiIdUtils::InvalidIDError) { ThaiIdUtils.laser_id_decode(INVALID_LASER_ID) }
